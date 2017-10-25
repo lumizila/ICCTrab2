@@ -1,5 +1,6 @@
 # ICCTrab2
 ### Segundo trabalho de ICC - Otimizar o codigo do primeiro trabalho.
+### Usar o pdf do livro de referencia que se encontra neste diretorio
 
 *Entregar relatorio e codigo*
 
