@@ -1,7 +1,12 @@
 # ICCTrab2
 ### Segundo trabalho de ICC - Otimizar o codigo do primeiro trabalho.
 ### Usar o pdf do livro de referencia que se encontra neste diretorio
-### Teremos que usar um pendrive bootavel para o trabalho pq o lidwid não está instalado nos labs.
+### Para usar o lidwid nos labs, executar os seguintes comandos primeiro: 
+
+```modprobe msr
+cd /home/soft/likwid
+export PATH=/home/soft/likwid/bin:/home/soft/likwid/sbin:$PATH
+export LD_LIBRARY_PATH=/home/soft/likwid/lib:$LD_LIBRARY_PATH```
 
 *Entregar relatorio e codigo*
 
@@ -98,3 +103,93 @@ BONUS: se você comprovar que está usando os registradores AVX de maneira efici
 
 Defesa: A defesa será agendada pelo professor caso julgue necessário. Especialmente casos em que houver discrepância entre a nota do trabalho e da segunda prova ensejarão defesa para comprovação de autoria.
 
+# O resultado do comando "likwid-topology -c -g" na maquina H40 do LAB12 foi:
+```
+lmwc14@h40:/home/soft/likwid$ likwid-topology -c -g
+--------------------------------------------------------------------------------
+CPU name:	AMD FX(tm)-6300 Six-Core Processor
+CPU type:	AMD Interlagos processor
+CPU stepping:	0
+********************************************************************************
+Hardware Thread Topology
+********************************************************************************
+Sockets:		1
+Cores per socket:	3
+Threads per core:	2
+--------------------------------------------------------------------------------
+HWThread	Thread		Core		Socket		Available
+0		0		0		0		*
+1		0		0		0		*
+2		0		1		0		*
+3		0		1		0		*
+4		0		2		0		*
+5		0		2		0		*
+--------------------------------------------------------------------------------
+Socket 0:		( 0 1 2 3 4 5 )
+--------------------------------------------------------------------------------
+********************************************************************************
+Cache Topology
+********************************************************************************
+Level:			1
+Size:			16 kB
+Type:			Data cache
+Associativity:		4
+Number of sets:		64
+Cache line size:	64
+Cache type:		Non Inclusive
+Shared by threads:	1
+Cache groups:		( 0 ) ( 1 ) ( 2 ) ( 3 ) ( 4 ) ( 5 )
+--------------------------------------------------------------------------------
+Level:			2
+Size:			2 MB
+Type:			Unified cache
+Associativity:		16
+Number of sets:		2048
+Cache line size:	64
+Cache type:		Non Inclusive
+Shared by threads:	2
+Cache groups:		( 0 1 ) ( 2 3 ) ( 4 5 )
+--------------------------------------------------------------------------------
+Level:			3
+Size:			8 MB
+Type:			Unified cache
+Associativity:		64
+Number of sets:		2048
+Cache line size:	64
+Cache type:		Non Inclusive
+Shared by threads:	2
+Cache groups:		( 0 1 ) ( 2 3 ) ( 4 5 )
+--------------------------------------------------------------------------------
+********************************************************************************
+NUMA Topology
+********************************************************************************
+NUMA domains:		1
+--------------------------------------------------------------------------------
+Domain:			0
+Processors:		( 0 1 2 3 4 5 )
+Distances:		10
+Free memory:		1587.15 MB
+Total memory:		3680.29 MB
+--------------------------------------------------------------------------------
+
+
+********************************************************************************
+Graphical Topology
+********************************************************************************
+Socket 0:
++-------------------------------------------------------------+
+| +-------+ +-------+ +-------+ |
+| |  0 1  | |  2 3  | |  4 5  | |
+| +-------+ +-------+ +-------+ |
+| +-------+ +-------+ +-------+ +-------+ +-------+ +-------+ |
+| | 16 kB | | 16 kB | | 16 kB | | 16 kB | | 16 kB | | 16 kB | |
+| +-------+ +-------+ +-------+ +-------+ +-------+ +-------+ |
+| +-------+ +-------+ +-------+ |
+| |  2 MB | |  2 MB | |  2 MB | |
+| +-------+ +-------+ +-------+ |
+| +-------+ +-------+ +-------+ |
+| |  8 MB | |  8 MB | |  8 MB | |
+| +-------+ +-------+ +-------+ |
++-------------------------------------------------------------+
+
+```
