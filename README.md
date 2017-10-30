@@ -104,8 +104,8 @@ BONUS: se você comprovar que está usando os registradores AVX de maneira efici
 Defesa: A defesa será agendada pelo professor caso julgue necessário. Especialmente casos em que houver discrepância entre a nota do trabalho e da segunda prova ensejarão defesa para comprovação de autoria.
 
 # O resultado do comando "likwid-topology -c -g" na maquina H40 do LAB12 foi:
-```
-lmwc14@h40:/home/soft/likwid$ likwid-topology -c -g
+
+```lmwc14@h40:/home/soft/likwid$ likwid-topology -c -g
 --------------------------------------------------------------------------------
 CPU name:	AMD FX(tm)-6300 Six-Core Processor
 CPU type:	AMD Interlagos processor
@@ -190,6 +190,4 @@ Socket 0:
 | +-------+ +-------+ +-------+ |
 | |  8 MB | |  8 MB | |  8 MB | |
 | +-------+ +-------+ +-------+ |
-+-------------------------------------------------------------+
-
-```
++-------------------------------------------------------------+```
