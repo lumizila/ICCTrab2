@@ -3,10 +3,12 @@
 ### Usar o pdf do livro de referencia que se encontra neste diretorio
 ### Para usar o lidwid nos labs, executar os seguintes comandos primeiro: 
 
-```modprobe msr
+```
+modprobe msr
 cd /home/soft/likwid
 export PATH=/home/soft/likwid/bin:/home/soft/likwid/sbin:$PATH
-export LD_LIBRARY_PATH=/home/soft/likwid/lib:$LD_LIBRARY_PATH```
+export LD_LIBRARY_PATH=/home/soft/likwid/lib:$LD_LIBRARY_PATH
+```
 
 *Entregar relatorio e codigo*
 
@@ -105,7 +107,8 @@ Defesa: A defesa será agendada pelo professor caso julgue necessário. Especial
 
 # O resultado do comando "likwid-topology -c -g" na maquina H40 do LAB12 foi:
 
-```lmwc14@h40:/home/soft/likwid$ likwid-topology -c -g
+```
+lmwc14@h40:/home/soft/likwid$ likwid-topology -c -g
 --------------------------------------------------------------------------------
 CPU name:	AMD FX(tm)-6300 Six-Core Processor
 CPU type:	AMD Interlagos processor
@@ -190,4 +193,5 @@ Socket 0:
 | +-------+ +-------+ +-------+ |
 | |  8 MB | |  8 MB | |  8 MB | |
 | +-------+ +-------+ +-------+ |
-+-------------------------------------------------------------+```
++-------------------------------------------------------------+
+```
