@@ -1,6 +1,7 @@
 # ICCTrab2
 ### Segundo trabalho de ICC - Otimizar o codigo do primeiro trabalho.
 ### Usar o pdf do livro de referencia que se encontra neste diretorio
+### Teremos que usar um pendrive bootavel para o trabalho pq o lidwid não está instalado nos labs.
 
 *Entregar relatorio e codigo*
 
@@ -96,3 +97,4 @@ BONUS: se você comprovar que está usando os registradores AVX de maneira efici
  
 
 Defesa: A defesa será agendada pelo professor caso julgue necessário. Especialmente casos em que houver discrepância entre a nota do trabalho e da segunda prova ensejarão defesa para comprovação de autoria.
+
