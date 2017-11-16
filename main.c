@@ -167,7 +167,7 @@ double fatoracaoLU(double *L, double *U, double *matriz, double *identidade, uns
 	double pivo;
 	int linha;
 	int coluna;
-	bool teve_troca;
+	//bool teve_troca;
 
 	///este for faz iterar para cada coluna
 	for(int i = 1; i < tamanho; i++) {
