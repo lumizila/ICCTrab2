@@ -167,7 +167,7 @@ double fatoracaoLU(double *L, double *U, double *matriz, double *identidade, uns
 	double pivo;
 	int linha;
 	int coluna;
-	//bool teve_troca;
+	bool teve_troca;
 
 	///este for faz iterar para cada coluna
 	for(int i = 1; i < tamanho; i++) {
@@ -253,6 +253,7 @@ double retrosubstituicao(double *L, double *U, double *Inversa, double *identida
 	///este for eh para cada coluna da identidade
 	for(int i = 0; i < tamanho; i++){
 		///inicializando o vetor y e o vetor x
+		///TODO COLOCAR A INICIALIZACAO DO X MAIS PEA BAIXO
 		for(int m = 0; m < tamanho; m++){
 			y[m] = 0;
 			x[m] = 0;
@@ -265,12 +266,14 @@ double retrosubstituicao(double *L, double *U, double *Inversa, double *identida
 				///este for opera a multiplicacao entre a matriz L e o vetor y
 				multi = 0;
 				for(int k = 0; k < j; k++){
+					//TODO TIRAR ESSA OP REPETITIVA DAQUI
 					multi = multi + L[tamanho*j+k]*y[k];
 				}
 
 				//y[2] = (identidade[tamanho*j+i]-(L[tamanho*j]*y[0]+L[tamanho*j+1]*y[1]))/ L[tamanho*j+2]
  				//...
-
+			
+				//TODO TIRAR ESSA OP REPETITIVA DAQUI
 				y[j] = (identidade[tamanho*j+i] - multi) / L[tamanho*j+j];
 		}
 
@@ -278,7 +281,8 @@ double retrosubstituicao(double *L, double *U, double *Inversa, double *identida
 		///agora que tenho o valor de y referente a coluna i da identidade,
 		///eh possivel calcular o vetor x referente a coluna i da identidade
 		///com retrosubstituicao
-
+		
+		//TODO COLOCAR Y EM UMA MATRIZ E COLOCAR ESSE FOR DE BAIXO EM UM FOR SEPARADO
 		///para cada linha de x, comecando de baixo pra cima
 		for(int j = (tamanho-1); j >= 0; j--) {
 			///este for opera a multiplicacao entre U e x
@@ -289,6 +293,7 @@ double retrosubstituicao(double *L, double *U, double *Inversa, double *identida
 			x[j] = (y[j] - multi) / U[tamanho*j+j];
 
 			///colocando os resultados de x na matriz inversa
+			//TODO escreve na inversa em um for separado deste
 			Inversa[tamanho*j+i] = x[j];
 		}
 	}
