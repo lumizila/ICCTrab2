@@ -347,6 +347,14 @@ void retrosubstituicao_refinamento(double *L, double *U, double *DiferencaInvers
 	}
 }
 
+int min(int a, int b) {
+	if (a < b) {
+		return a;
+	} else {
+		return b;
+	}
+}
+
 ///Funcao que melhora os resultados obtidos anteriormente para a matriz Inversa, atraves do metodo de refinamento
 double refinamento(double *matriz, double *L, double *U, double *Inversa, double *identidade, unsigned int tamanho_matriz, int iteracoes, FILE *saida, bool tem_saida, double *tempo_iter) {
 	double tempo_total = 0;
@@ -372,15 +380,15 @@ double refinamento(double *matriz, double *L, double *U, double *Inversa, double
 		}
 
 		///calculando I_aprox FAZER BLOCKING????????????????
-		double soma;
+		/*double soma;
 		int blockSize = 8; //deve ser a raiz do tamanho da linha de cache?
 		for(int i = 0; i < tamanho_matriz; i += blockSize) {
 			for(int j = 0; j < tamanho_matriz; j += blockSize) {
 			    for(int k = 0; k < tamanho_matriz; k += blockSize) {
 					for(int ii = i; min(i+blockSize, tamanho_matriz); ii++) {
-						for(jj = j; min(j+blockSize, tamanho_matriz); jj++) {
+						for(int jj = j; min(j+blockSize, tamanho_matriz); jj++) {
 							soma = 0;
-							for(kk = k; min(k+blockSize, tamanho_matriz); kk++) {
+							for(int kk = k; min(k+blockSize, tamanho_matriz); kk++) {
 								soma = soma + matriz[(i*tamanho_matriz) + k] * Inversa[(k*tamanho_matriz) + j];
 							}
 							I_aprox[(i*tamanho_matriz) + j] = I_aprox[(i*tamanho_matriz) + j] + soma;
@@ -389,9 +397,9 @@ double refinamento(double *matriz, double *L, double *U, double *Inversa, double
 			    }
 
 			}
-		}
+		}*/
 
-		/*double soma;
+		double soma;
 		for(int i = 0; i < tamanho_matriz; i++) {
 			for(int j = 0; j < tamanho_matriz; j++) {
 			    soma = 0;
@@ -400,7 +408,7 @@ double refinamento(double *matriz, double *L, double *U, double *Inversa, double
 			    }
 				I_aprox[(i*tamanho_matriz) + j] = soma;
 			}
-		}*/
+		}
 
 		///calculando R
 		for(int i = 0; i < tamanho_matriz; i++){
