@@ -234,6 +234,10 @@ double retrosubstituicao(double *L, double *U, double *Inversa, unsigned int tam
 		y[m] = 0;
 	}
 	
+	//TODO Alterar o tamanho das matrizes de acordo com o tamanho da linha de cache
+	//TODO Alterar os loops para que respeitem a cache
+	//TODO Armazenar apenas o que importa nas matrizes L e U ja que o resto eh 0 e mudar a logica de acordo
+	
 	///este for eh para cada coluna de Identidade
 	for(int i = 0; i < tamanho; i++){
 		///Ly = b
