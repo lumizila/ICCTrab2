@@ -1,4 +1,4 @@
-///Os membros do grupo são: 
+///Os membros do grupo são:
 ///Luiza Culau - GRR20141014
 ///Adolfo Tognetti - GRR20152278
 
@@ -167,7 +167,7 @@ double fatoracaoLU(double *L, double *U, double *matriz, double *identidade, uns
 	double pivo;
 	int linha;
 	int coluna;
-	bool teve_troca;
+	//bool teve_troca;
 
 	///este for faz iterar para cada coluna
 	for(int i = 1; i < tamanho; i++) {
@@ -178,7 +178,7 @@ double fatoracaoLU(double *L, double *U, double *matriz, double *identidade, uns
 
 		///guarda em qual linha esta o maior pivo
 		int maior = pivo_posicao;
-		
+
 		int aux;
 		///procurando o maior elemento em modulo da coluna para ser pivo
 		for (int p = pivo_posicao + 1; p < tamanho; p++) {
@@ -187,7 +187,7 @@ double fatoracaoLU(double *L, double *U, double *matriz, double *identidade, uns
 				teve_troca = true;
 				printf("pos pivo= %d, maior pos=%d \n", pivo_posicao, maior);
 				aux = trocas[pivo_posicao];
-				trocas[pivo_posicao] = trocas[maior]; 
+				trocas[pivo_posicao] = trocas[maior];
 				trocas[maior] = aux;
 			}
 		}
@@ -226,7 +226,7 @@ double fatoracaoLU(double *L, double *U, double *matriz, double *identidade, uns
 	//	printf("%d ", trocas[i]);
 	//}
 	//printf("\n");
-	
+
 	///capturando variacao de tempo
 	tempo_inicial = timestamp() - tempo_inicial;
 	return tempo_inicial;
@@ -285,6 +285,7 @@ double retrosubstituicao(double *L, double *U, double *Inversa, double *identida
 		///agora que tenho o valor de y referente a coluna i da identidade,
 		///eh possivel calcular o vetor x referente a coluna i da identidade
 		///com retrosubstituicao
+<<<<<<< HEAD
 		///inicializando o vetor x
 		for(int m = 0; m < tamanho; m++){
 			x[m] = 0;
@@ -294,6 +295,7 @@ double retrosubstituicao(double *L, double *U, double *Inversa, double *identida
 		for(int j = (tamanho-1); j >= 0; j--) {
 			///este for opera a multiplicacao entre U e x
 			multi = 0;
+
 			for(int k = (tamanho-1); k > j; k--) {
 				multi = multi + U[tamanho*j+k]*x[k];
 			}
@@ -354,10 +356,19 @@ void retrosubstituicao_refinamento(double *L, double *U, double *DiferencaInvers
 	}
 }
 
+int min(int a, int b) {
+	if (a < b) {
+		return a;
+	} else {
+		return b;
+	}
+}
+
 ///Funcao que melhora os resultados obtidos anteriormente para a matriz Inversa, atraves do metodo de refinamento
 double refinamento(double *matriz, double *L, double *U, double *Inversa, double *identidade, unsigned int tamanho_matriz, int iteracoes, FILE *saida, bool tem_saida, double *tempo_iter) {
 	double tempo_total = 0;
 	double soma_tempo = 0;
+	int linha;
 
 	///repete o processo o numero de vezes foi passado por parametro
 	for (int it = 1; it <= iteracoes; it++) {
@@ -378,22 +389,48 @@ double refinamento(double *matriz, double *L, double *U, double *Inversa, double
 			exit(0);
 		}
 
-		///calculando I_aprox
+		///calculando I_aprox FAZER BLOCKING?
+		/*double soma;
+		int blockSize = 8; //deve ser a raiz do tamanho da linha de cache?
+		for(int i = 0; i < tamanho_matriz; i += blockSize) {
+			for(int j = 0; j < tamanho_matriz; j += blockSize) {
+			    for(int k = 0; k < tamanho_matriz; k += blockSize) {
+					for(int ii = i; ii < min(i+blockSize, tamanho_matriz); ii++) {
+						for(int jj = j; jj < min(j+blockSize, tamanho_matriz); jj++) {
+							soma = 0;
+							for(int kk = k; kk < min(k+blockSize, tamanho_matriz); kk++) {
+								soma = soma + matriz[(i*tamanho_matriz) + k] * Inversa[(k*tamanho_matriz) + j];
+							}
+							I_aprox[(i*tamanho_matriz) + j] = I_aprox[(i*tamanho_matriz) + j] + soma;
+						}
+					}
+			    }
+
+			}
+		}*/
+
 		double soma;
 		for(int i = 0; i < tamanho_matriz; i++) {
+			linha = i * tamanho_matriz;
 			for(int j = 0; j < tamanho_matriz; j++) {
 			    soma = 0;
 			    for(int k = 0; k < tamanho_matriz; k++) {
-					soma = soma + matriz[(i*tamanho_matriz) + k] * Inversa[(k*tamanho_matriz) + j];
+						soma = soma + matriz[linha + k] * Inversa[(k*tamanho_matriz) + j];
 			    }
 				I_aprox[(i*tamanho_matriz) + j] = soma;
 			}
 		}
 
 		///calculando R
-		for(int i = 0; i < tamanho_matriz; i++){
-			for(int j = 0; j < tamanho_matriz; j++){
-				R[(i*tamanho_matriz) + j] = identidade[(i*tamanho_matriz) + j] - I_aprox[(i*tamanho_matriz) + j];
+		for(int i = 0; i < tamanho_matriz; i++) {
+			linha = i * tamanho_matriz;
+			for(int j = 0; j < tamanho_matriz; j++) {
+				//R[(i*tamanho_matriz) + j] = identidade[(i*tamanho_matriz) + j] - I_aprox[(i*tamanho_matriz) + j];
+				if (i == j) {
+					R[linha + j] = 1 - I_aprox[linha + j];
+				} else {
+					R[linha + j] = 0 - I_aprox[linha + j];
+				}
 			}
 		}
 
@@ -535,7 +572,7 @@ int main(int argc, char *argv[]){
 			trocas[i] = i;
 	}
 	double tempo_LU = fatoracaoLU(L, U, matriz, identidade, tamanho_matriz, trocas);
-	
+
 	///testa se inversivel
 	if(tempo_LU == -1){
 		printf("Erro: a matriz nao eh inversivel\n");
@@ -547,7 +584,7 @@ int main(int argc, char *argv[]){
 		printf("Erro: afalha na alocacao da matriz I, terminando o programa.\n");
 		exit(0);
 	}
-	
+
 	///faz a retrosubstituicao
 	double tempo_iter = retrosubstituicao(L, U, Inversa, identidade, tamanho_matriz);
 
