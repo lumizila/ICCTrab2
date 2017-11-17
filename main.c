@@ -259,23 +259,23 @@ double retrosubstituicao(double *L, double *U, double *Inversa, double *identida
 		y[m] = 0;
 	}
 	
-	///este for eh para cada linha de L
+	///este for eh para cada coluna de Identidade
 	for(int i = 0; i < tamanho; i++){
 		///Ly = b
-		///este for eh para cada coluna de y
+		///este for eh para cada linha de y
 		///faz-se a substituicao
 		for(int j = 0; j < tamanho; j++){
 				///este for opera a multiplicacao entre a matriz L e o vetor y
 				multi = 0;
 				///para cada linha de y
 				for(int k = 0; k < j; k++){
-					multi = multi + L[tamanho*i+k]*y[tamanho*k+j];
+					multi = multi + L[tamanho*j+k]*y[tamanho*k+i];
 				}
 
 				//y[2] = (identidade[tamanho*j+i]-(L[tamanho*j]*y[0]+L[tamanho*j+1]*y[1]))/ L[tamanho*j+2]
  				//...
  				//TODO checar aqui
-				y[tamanho*i+j] = (identidade[tamanho*i+j] - multi);
+				y[tamanho*j+i] = (identidade[tamanho*j+i] - multi);
 		}
 	}
 
@@ -284,7 +284,7 @@ double retrosubstituicao(double *L, double *U, double *Inversa, double *identida
 	}
 
 	///este for eh para cada linha de U
-	for(int i = (tamanho-1); i >= 0; i--){
+	for(int i = 0; i < tamanho; i++){
 		///Ux = y
 		///agora que tenho o valor de y referente a coluna i da identidade,
 		///eh possivel calcular o vetor x referente a coluna i da identidade
@@ -295,9 +295,9 @@ double retrosubstituicao(double *L, double *U, double *Inversa, double *identida
 			///este for opera a multiplicacao entre U e x
 			multi = 0;	
 			for(int k = (tamanho-1); k > j; k--) {
-				multi = multi + U[tamanho*i+k]*Inversa[tamanho*k+j];
+				multi = multi + U[tamanho*j+k]*Inversa[tamanho*k+i];
 			}
-			Inversa[tamanho*i+j] = (y[tamanho*i+j] - multi) / U[tamanho*i+i];
+			Inversa[tamanho*j+i] = (y[tamanho*j+i] - multi) / U[tamanho*j+j];
 		}
 	}
 
