@@ -117,11 +117,12 @@ double *leMatrizStdin(unsigned int *tamanho) {
 ///funcao para trocar linhas de uma matriz
 void trocaLinhas(double *matriz, unsigned int tamanho, int linha1, int linha2) {
 	double aux;
-
+	linha1 = linha1*tamanho;
+	linha2 = linha2*tamanho;
 	for(int i = 0; i < tamanho; i++) {
 		aux = matriz[(linha1*tamanho) + i];
-		matriz[(linha1*tamanho) + i] = matriz[(linha2*tamanho) + i];
-		matriz[(linha2*tamanho) + i] = aux;
+		matriz[linha1 + i] = matriz[linha2 + i];
+		matriz[linha2 + i] = aux;
 	}
 }
 
