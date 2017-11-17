@@ -70,27 +70,6 @@ double *generateSquareRandomMatrix( unsigned int n ) {
 	return (mat);
 }
 
-///funcao para gerar uma matriz indentidade n*n
-double *geraMatrizIdentidade(unsigned int tamanho) {
-	double *identidade = NULL;
-
-	///termina programa se alocacao falha
-	if ( ! (identidade = (double *) malloc(tamanho*tamanho*sizeof(double))) ){
-		printf("Erro: falha na alocacao da matriz, terminando o programa.\n");
-		exit(0);
-	}
-
-	for(int i = 0; i < tamanho; i++) {
-		for(int j = 0; j < tamanho; j ++){
-			identidade[(i*tamanho) + j] = 0;
-			if(i == j){
-				identidade[(i*tamanho) + j] = 1;
-			}
-		}
-	}
-	return identidade;
-}
-
 ///funcao para ler a matriz de um arquivo de entrada
 double *leMatriz(FILE *entrada, unsigned int *tamanho) {
 	double *mat = NULL;
@@ -147,7 +126,7 @@ void trocaLinhas(double *matriz, unsigned int tamanho, int linha1, int linha2) {
 }
 
 ///funcao para fazer a fatoracao LU da matriz
-double fatoracaoLU(double *L, double *U, double *matriz, double *identidade, unsigned int tamanho, int *trocas) {
+double fatoracaoLU(double *L, double *U, double *matriz, unsigned int tamanho, int *trocas) {
 	///capturando o tempo inicial
 	double tempo_inicial = timestamp();
 
@@ -233,13 +212,10 @@ double fatoracaoLU(double *L, double *U, double *matriz, double *identidade, uns
 }
 
 ///Funcao que calcula os valores da matriz Inversa atraves da retrosubstituicao
-double retrosubstituicao(double *L, double *U, double *Inversa, double *identidade, unsigned int tamanho) {
-	//TODO: tentar eliminar a identidade usando apenas logica na diag principal
+double retrosubstituicao(double *L, double *U, double *Inversa, unsigned int tamanho) {
 	
 	///capturando o tempo inicial
 	double tempo_inicial = timestamp();
-	imprimeMatriz(L, tamanho, 0, 0, 0);
-	imprimeMatriz(U, tamanho, 0, 0, 0);
 	///agora que temos a matriz identidade, a L e a U
 	///de forma que matriz*inversa = identidade, eh possivel
 	///calcular a inversa coluna por coluna na forma:
@@ -248,12 +224,10 @@ double retrosubstituicao(double *L, double *U, double *Inversa, double *identida
 
 	///criando o vetor x e matriz y para salvar as informacoes
 	double y[tamanho*tamanho];
-	double x[tamanho];
 
 	double multi;
 	int linha;
-	int coluna;
-	
+	int identidade;
 	///inicializando a matriz y 
 	for(int m = 0; m < tamanho*tamanho; m++){
 		y[m] = 0;
@@ -268,14 +242,18 @@ double retrosubstituicao(double *L, double *U, double *Inversa, double *identida
 				///este for opera a multiplicacao entre a matriz L e o vetor y
 				multi = 0;
 				///para cada linha de y
+				linha = tamanho*j;
 				for(int k = 0; k < j; k++){
-					multi = multi + L[tamanho*j+k]*y[tamanho*k+i];
+					multi = multi + L[linha+k]*y[tamanho*k+i];
 				}
 
 				//y[2] = (identidade[tamanho*j+i]-(L[tamanho*j]*y[0]+L[tamanho*j+1]*y[1]))/ L[tamanho*j+2]
  				//...
- 				//TODO checar aqui
-				y[tamanho*j+i] = (identidade[tamanho*j+i] - multi);
+				identidade = 0;
+				if(linha == i){
+					identidade = 1;
+				}
+				y[linha+i] = (identidade - multi);
 		}
 	}
 
@@ -293,11 +271,12 @@ double retrosubstituicao(double *L, double *U, double *Inversa, double *identida
 		///para cada coluna de x
 		for(int j = (tamanho-1); j >= 0; j--) {
 			///este for opera a multiplicacao entre U e x
-			multi = 0;	
+			multi = 0;
+			linha = tamanho*j;	
 			for(int k = (tamanho-1); k > j; k--) {
-				multi = multi + U[tamanho*j+k]*Inversa[tamanho*k+i];
+				multi = multi + U[linha+k]*Inversa[tamanho*k+i];
 			}
-			Inversa[tamanho*j+i] = (y[tamanho*j+i] - multi) / U[tamanho*j+j];
+			Inversa[linha+i] = (y[linha+i] - multi) / U[linha+j];
 		}
 	}
 
@@ -359,7 +338,7 @@ int min(int a, int b) {
 }
 
 ///Funcao que melhora os resultados obtidos anteriormente para a matriz Inversa, atraves do metodo de refinamento
-double refinamento(double *matriz, double *L, double *U, double *Inversa, double *identidade, unsigned int tamanho_matriz, int iteracoes, FILE *saida, bool tem_saida, double *tempo_iter) {
+double refinamento(double *matriz, double *L, double *U, double *Inversa, unsigned int tamanho_matriz, int iteracoes, FILE *saida, bool tem_saida, double *tempo_iter) {
 	double tempo_total = 0;
 	double soma_tempo = 0;
 	int linha;
@@ -497,7 +476,6 @@ int main(int argc, char *argv[]){
 	///fica na posicao 0 e o primeiro elemento da segunda linha
 	///fica na posicao n
 	double *matriz = NULL;
-	double *identidade = NULL;
 
 	///esse for localiza os parametros passados para o argv
 	///e faz as operacoes devidas de acordo com o parametro;
@@ -559,13 +537,11 @@ int main(int argc, char *argv[]){
 		exit(0);
 	}
 
-	///gera matriz identidade
-	identidade = geraMatrizIdentidade(tamanho_matriz);
 	int trocas[tamanho_matriz];
 	for(int i = 0; i < tamanho_matriz; i++){
 			trocas[i] = i;
 	}
-	double tempo_LU = fatoracaoLU(L, U, matriz, identidade, tamanho_matriz, trocas);
+	double tempo_LU = fatoracaoLU(L, U, matriz, tamanho_matriz, trocas);
 
 	///testa se inversivel
 	if(tempo_LU == -1){
@@ -580,7 +556,7 @@ int main(int argc, char *argv[]){
 	}
 
 	///faz a retrosubstituicao
-	double tempo_iter = retrosubstituicao(L, U, Inversa, identidade, tamanho_matriz);
+	double tempo_iter = retrosubstituicao(L, U, Inversa, tamanho_matriz);
 
 	if (tem_saida) {
 		fprintf(saida, "#\n");
@@ -589,9 +565,9 @@ int main(int argc, char *argv[]){
 	}
 
 	///chamando a funcao de refinamento
-	/*if (iteracoes > 0) {
-		tempo_residuo = refinamento(matriz, L, U, Inversa, identidade, tamanho_matriz, iteracoes, saida, tem_saida, &tempo_iter);
-	}*/
+	if (iteracoes > 0) {
+		tempo_residuo = refinamento(matriz, L, U, Inversa, tamanho_matriz, iteracoes, saida, tem_saida, &tempo_iter);
+	}
 
 	if(tem_saida){
 		imprimeMatrizArquivo(Inversa, tamanho_matriz, tempo_LU, tempo_iter, tempo_residuo, saida);
