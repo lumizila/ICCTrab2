@@ -234,7 +234,8 @@ double fatoracaoLU(double *L, double *U, double *matriz, double *identidade, uns
 
 ///Funcao que calcula os valores da matriz Inversa atraves da retrosubstituicao
 double retrosubstituicao(double *L, double *U, double *Inversa, double *identidade, unsigned int tamanho) {
-
+	//TODO: tentar eliminar a identidade usando apenas logica na diag principal
+	
 	///capturando o tempo inicial
 	double tempo_inicial = timestamp();
 
@@ -244,44 +245,50 @@ double retrosubstituicao(double *L, double *U, double *Inversa, double *identida
 	///matriz*inversa[coluna x] = identidade[coluna x]
 	///assim temos que Ax=b e A=LU, portanto L(Ux) = b, Ly = b e Ux = y
 
-	///criando o vetor y para salvar as informacoes
-	double y[tamanho];
+	///criando o vetor x e matriz y para salvar as informacoes
+	double y[tamanho*tamanho];
 	double x[tamanho];
 
 	double multi;
-
-	///este for eh para cada coluna da identidade
+	int linha;
+	int coluna;
+	
+	///inicializando a matriz y 
+	for(int m = 0; m < tamanho*tamanho; m++){
+		y[m] = 0;
+	}
+	
+	///este for eh para cada linha de L
 	for(int i = 0; i < tamanho; i++){
-		///inicializando o vetor y e o vetor x
-		///TODO COLOCAR A INICIALIZACAO DO X MAIS PEA BAIXO
-		for(int m = 0; m < tamanho; m++){
-			y[m] = 0;
-			x[m] = 0;
-		}
-
 		///Ly = b
-		///este for eh para cada linha de y
+		///este for eh para cada coluna de y
 		///faz-se a substituicao
 		for(int j = 0; j < tamanho; j++){
 				///este for opera a multiplicacao entre a matriz L e o vetor y
 				multi = 0;
+				linha = tamanho*j;
+				///para cada linha de y
 				for(int k = 0; k < j; k++){
-					//TODO TIRAR ESSA OP REPETITIVA DAQUI
-					multi = multi + L[tamanho*j+k]*y[k];
+					multi = multi + L[i+k]*y[tamanho*k+j];
 				}
 
 				//y[2] = (identidade[tamanho*j+i]-(L[tamanho*j]*y[0]+L[tamanho*j+1]*y[1]))/ L[tamanho*j+2]
  				//...
-			
-				//TODO TIRAR ESSA OP REPETITIVA DAQUI
-				y[j] = (identidade[tamanho*j+i] - multi) / L[tamanho*j+j];
+ 				//TODO checar aqui
+				y[linha+i] = (identidade[linha+i] - multi);
 		}
-
+	}
+	
+	///este for eh para cada coluna de y
+	for(int i = 0; i < tamanho; i++){
 		///Ux = y
 		///agora que tenho o valor de y referente a coluna i da identidade,
 		///eh possivel calcular o vetor x referente a coluna i da identidade
 		///com retrosubstituicao
-		
+		///inicializando o vetor x
+		for(int m = 0; m < tamanho; m++){
+			x[m] = 0;
+		}
 		//TODO COLOCAR Y EM UMA MATRIZ E COLOCAR ESSE FOR DE BAIXO EM UM FOR SEPARADO
 		///para cada linha de x, comecando de baixo pra cima
 		for(int j = (tamanho-1); j >= 0; j--) {
