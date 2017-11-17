@@ -238,7 +238,8 @@ double retrosubstituicao(double *L, double *U, double *Inversa, double *identida
 	
 	///capturando o tempo inicial
 	double tempo_inicial = timestamp();
-
+	imprimeMatriz(L, tamanho, 0, 0, 0);
+	imprimeMatriz(U, tamanho, 0, 0, 0);
 	///agora que temos a matriz identidade, a L e a U
 	///de forma que matriz*inversa = identidade, eh possivel
 	///calcular a inversa coluna por coluna na forma:
@@ -266,44 +267,37 @@ double retrosubstituicao(double *L, double *U, double *Inversa, double *identida
 		for(int j = 0; j < tamanho; j++){
 				///este for opera a multiplicacao entre a matriz L e o vetor y
 				multi = 0;
-				linha = tamanho*j;
 				///para cada linha de y
 				for(int k = 0; k < j; k++){
-					multi = multi + L[i+k]*y[tamanho*k+j];
+					multi = multi + L[tamanho*i+k]*y[tamanho*k+j];
 				}
 
 				//y[2] = (identidade[tamanho*j+i]-(L[tamanho*j]*y[0]+L[tamanho*j+1]*y[1]))/ L[tamanho*j+2]
  				//...
  				//TODO checar aqui
-				y[linha+i] = (identidade[linha+i] - multi);
+				y[tamanho*i+j] = (identidade[tamanho*i+j] - multi);
 		}
 	}
-	
-	///este for eh para cada coluna de y
-	for(int i = 0; i < tamanho; i++){
+
+	for(int m = 0; m < tamanho*tamanho; m++){
+		Inversa[m] = 0;
+	}
+
+	///este for eh para cada linha de U
+	for(int i = (tamanho-1); i >= 0; i--){
 		///Ux = y
 		///agora que tenho o valor de y referente a coluna i da identidade,
 		///eh possivel calcular o vetor x referente a coluna i da identidade
 		///com retrosubstituicao
-<<<<<<< HEAD
-		///inicializando o vetor x
-		for(int m = 0; m < tamanho; m++){
-			x[m] = 0;
-		}
-		//TODO COLOCAR Y EM UMA MATRIZ E COLOCAR ESSE FOR DE BAIXO EM UM FOR SEPARADO
-		///para cada linha de x, comecando de baixo pra cima
+		
+		///para cada coluna de x
 		for(int j = (tamanho-1); j >= 0; j--) {
 			///este for opera a multiplicacao entre U e x
-			multi = 0;
-
+			multi = 0;	
 			for(int k = (tamanho-1); k > j; k--) {
-				multi = multi + U[tamanho*j+k]*x[k];
+				multi = multi + U[tamanho*i+k]*Inversa[tamanho*k+j];
 			}
-			x[j] = (y[j] - multi) / U[tamanho*j+j];
-
-			///colocando os resultados de x na matriz inversa
-			//TODO escreve na inversa em um for separado deste
-			Inversa[tamanho*j+i] = x[j];
+			Inversa[tamanho*i+j] = (y[tamanho*i+j] - multi) / U[tamanho*i+i];
 		}
 	}
 
@@ -345,7 +339,7 @@ void retrosubstituicao_refinamento(double *L, double *U, double *DiferencaInvers
 		for(int j = (tamanho-1); j >= 0; j--) {
 			///este for opera a multiplicacao entre U e x
 			multi = 0;
-			for(int k = (tamanho-1); k > j; k--) {
+			for(int k = (tamanho-1); k >= j; k--) {
 				multi = multi + U[tamanho*j+k]*x[k];
 			}
 			x[j] = (y[j] - multi) / U[tamanho*j+j];
@@ -595,9 +589,9 @@ int main(int argc, char *argv[]){
 	}
 
 	///chamando a funcao de refinamento
-	if (iteracoes > 0) {
+	/*if (iteracoes > 0) {
 		tempo_residuo = refinamento(matriz, L, U, Inversa, identidade, tamanho_matriz, iteracoes, saida, tem_saida, &tempo_iter);
-	}
+	}*/
 
 	if(tem_saida){
 		imprimeMatrizArquivo(Inversa, tamanho_matriz, tempo_LU, tempo_iter, tempo_residuo, saida);
