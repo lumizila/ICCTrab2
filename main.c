@@ -130,18 +130,19 @@ void trocaLinhas(double *matriz, unsigned int tamanho, int linha1, int linha2) {
 }
 
 ///funcao para fazer a fatoracao LU da matriz
-double fatoracaoLU(double *L, double *U, double *matriz, unsigned int tamanho, int *trocas) {
+double fatoracaoLU(double *L, int tamL, double *U, double *matriz, unsigned int tamanho, int *trocas) {
 	///capturando o tempo inicial
 	double tempo_inicial = timestamp();
 
-	///inicializando a matriz L e a matriz U
+	///inicializando a matriz L 
+	for(int i = 0; i < tamL; i++){
+		L[tamL] = 0;
+	}
+
+	///inicializando a matriz U
 	for(int i = 0; i < tamanho; i++){
 		for(int j = 0; j < tamanho; j ++){
 			U[(i*tamanho) + j] = matriz[(i*tamanho) + j];
-			L[(i*tamanho) + j] = 0;
-			if(i == j){
-				L[(i*tamanho) + j] = 1;
-			}
 		}
 	}
 
@@ -193,8 +194,7 @@ double fatoracaoLU(double *L, double *U, double *matriz, unsigned int tamanho, i
 
 			///obtendo o fator para multiplicar a linha anterior e subtrair da linha atual
 			double fator = U[linha+coluna]/pivo;
-			L[linha+coluna] = fator;
-
+			L[((k*k-k)/2)+coluna] = fator;
 			///este for faz a subtracao para cada el da linha
 			for(int j = pivo_posicao; j < tamanho; j++){
 				U[linha+j] = U[linha+j]-(U[tamanho*pivo_posicao+j]*fator);
@@ -228,8 +228,8 @@ double retrosubstituicao(double *L, double *U, double *Inversa, unsigned int tam
 
 	///criando o vetor x e matriz y para salvar as informacoes
 	double y[tamanho*tamanho];
-
 	double multi;
+	double l;
 	int linha;
 	int identidade;
 	///inicializando a matriz y
@@ -240,7 +240,7 @@ double retrosubstituicao(double *L, double *U, double *Inversa, unsigned int tam
 	//TODO Alterar o tamanho das matrizes de acordo com o tamanho da linha de cache
 	//TODO Alterar os loops para que respeitem a cache
 	//TODO Armazenar apenas o que importa nas matrizes L e U ja que o resto eh 0 e mudar a logica de acordo
-
+	
 	///este for eh para cada coluna de Identidade
 	for(int i = 0; i < tamanho; i++){
 		///Ly = b
@@ -252,19 +252,23 @@ double retrosubstituicao(double *L, double *U, double *Inversa, unsigned int tam
 				///para cada linha de y
 				linha = tamanho*j;
 				for(int k = 0; k < j; k++){
-					multi = multi + L[linha+k]*y[tamanho*k+i];
+					l = 1;
+					if(k != j){
+						int aux = ((j*j)-j)/2;
+						l = L[aux+k];
+					}
+					multi = multi + l * y[tamanho*k+i];
 				}
 
 				//y[2] = (identidade[tamanho*j+i]-(L[tamanho*j]*y[0]+L[tamanho*j+1]*y[1]))/ L[tamanho*j+2]
  				//...
 				identidade = 0;
-				if(linha == i){
+				if(j == i){
 					identidade = 1;
 				}
 				y[linha+i] = (identidade - multi);
 		}
 	}
-
 	for(int m = 0; m < tamanho*tamanho; m++){
 		Inversa[m] = 0;
 	}
@@ -276,18 +280,19 @@ double retrosubstituicao(double *L, double *U, double *Inversa, unsigned int tam
 		///eh possivel calcular o vetor x referente a coluna i da identidade
 		///com retrosubstituicao
 
-		///para cada coluna de x
+		///para cada coluna de Inversa
 		for(int j = (tamanho-1); j >= 0; j--) {
 			///este for opera a multiplicacao entre U e x
 			multi = 0;
 			linha = tamanho*j;
-			for(int k = (tamanho-1); k > j; k--) {
+			///para cada linha de Inversa 
+			for(int k = (tamanho-1); k >= j; k--) {
 				multi = multi + U[linha+k]*Inversa[tamanho*k+i];
 			}
-			Inversa[linha+i] = (y[linha+i] - multi) / U[linha+j];
+			double total =  (y[linha+i] - multi) / U[linha+j];
+			Inversa[linha+i] = total;		
 		}
 	}
-
 	LIKWID_MARKER_STOP("Retrosubs");
 	///capturando variacao de tempo
 	tempo_inicial = timestamp() - tempo_inicial;
@@ -302,7 +307,7 @@ void retrosubstituicao_refinamento(double *L, double *U, double *DiferencaInvers
 	double x[tamanho];
 
 	double multi;
-
+	double l;
 	///este for eh para cada coluna da matriz R
 	for(int i = 0; i < tamanho; i++) {
 		///inicializando o vetor y e o vetor x
@@ -317,9 +322,14 @@ void retrosubstituicao_refinamento(double *L, double *U, double *DiferencaInvers
 				///este for opera a multiplicacao entre a matriz L e o vetor y
 				multi = 0;
 				for(int k = 0; k < j; k++){
-					multi = multi + L[tamanho*j+k]*y[k];
+					l = 1;
+					if(k != j){
+						int aux = ((j*j)-j)/2;
+						l = L[aux+k];
+					}
+					multi = multi + l*y[k];
 				}
-				y[j] = (R[tamanho*j+i] - multi) / L[tamanho*j+j];
+				y[j] = (R[tamanho*j+i] - multi);
 		}
 
 		///Ux = y
@@ -507,7 +517,7 @@ int main(int argc, char *argv[]){
 			entrada = fopen(argv[i+1], "r");
 			if (entrada == NULL) {
 				perror("Erro ao abrir o arquivo de entrada");
-	     	}
+	     		}
 		}
 		else if(strcmp(argv[i], "-o") == 0){
 			///escrever no arquivo de saida
@@ -523,7 +533,7 @@ int main(int argc, char *argv[]){
 			tamanho_matriz = atoi(argv[i+1]);
 			matriz = generateSquareRandomMatrix(tamanho_matriz);
 			//descomentar a linha de baixo para ver a matriz eleatoria criada
-			//imprimeMatriz(matriz, tamanho_matriz,0,0,0);
+			imprimeMatriz(matriz, tamanho_matriz,0,0,0);
 		}
 		else if(strcmp(argv[i], "-i") == 0){
 			///numero de iteracoes do refinamento
@@ -549,52 +559,58 @@ int main(int argc, char *argv[]){
 	///fazendo a fatoracao L U
 	double *L = NULL;
 	double *U = NULL;
-	if ( ! (L = (double *) malloc(tamanho_matriz*tamanho_matriz*sizeof(double))) ){
+	double *Inversa = NULL;
+	int tam_quadrado = tamanho_matriz*tamanho_matriz; 
+	//ALOCACAO ANTIGA
+	/*if ( ! (L = (double *) malloc(tamanho_matriz*tamanho_matriz*sizeof(double))) ){
 		printf("Erro: afalha na alocacao da matriz L, terminando o programa.\n");
 		exit(0);
-	}
-	if ( ! (U = (double *) malloc(tamanho_matriz*tamanho_matriz*sizeof(double))) ){
+	}*/
+	if ( ! (U = (double *) malloc(tam_quadrado*sizeof(double))) ){
 		printf("Erro: afalha na alocacao da matriz U, terminando o programa.\n");
 		exit(0);
 	}
+	if ( ! (Inversa = (double *) malloc(tam_quadrado*sizeof(double))) ){
+		printf("Erro: afalha na alocacao da matriz I, terminando o programa.\n");
+		exit(0);
+	}
 
+	//ALOCACAO NOVA, MAIS EFICIENTE, MENOS MEMORIA
+	int tamL = tam_quadrado - (((tam_quadrado-tamanho_matriz)/2) + tamanho_matriz);
+	if ( ! (L = (double *) malloc(tamL*sizeof(double))) ){
+		printf("Erro: afalha na alocacao da matriz L, terminando o programa.\n");
+		exit(0);
+	}
+	
 	int trocas[tamanho_matriz];
 	for(int i = 0; i < tamanho_matriz; i++){
-			trocas[i] = i;
+		trocas[i] = i;
 	}
-	double tempo_LU = fatoracaoLU(L, U, matriz, tamanho_matriz, trocas);
-
+	double tempo_LU = fatoracaoLU(L, tamL, U, matriz, tamanho_matriz, trocas);	
 	///testa se inversivel
 	if(tempo_LU == -1) {
 		printf("Erro: a matriz nao eh inversivel\n");
 		exit(1);
 	}
 
-	double *Inversa = NULL;
-	if ( ! (Inversa = (double *) malloc(tamanho_matriz*tamanho_matriz*sizeof(double))) ){
-		printf("Erro: afalha na alocacao da matriz I, terminando o programa.\n");
-		exit(0);
-	}
-
 	///faz a retrosubstituicao
 	double tempo_iter = retrosubstituicao(L, U, Inversa, tamanho_matriz);
-
 	if (tem_saida) {
 		fprintf(saida, "#\n");
 	} else {
 		printf("#\n");
 	}
-
+	imprimeMatriz(Inversa, tamanho_matriz, 0,0,0);
 	///chamando a funcao de refinamento
 	if (iteracoes > 0) {
 		tempo_residuo = refinamento(matriz, L, U, Inversa, tamanho_matriz, iteracoes, saida, tem_saida, &tempo_iter);
 	}
 
 	if(tem_saida){
-//		imprimeMatrizArquivo(Inversa, tamanho_matriz, tempo_LU, tempo_iter, tempo_residuo, saida);
+		imprimeMatrizArquivo(Inversa, tamanho_matriz, tempo_LU, tempo_iter, tempo_residuo, saida);
 	}
 	else{
-//		imprimeMatriz(Inversa, tamanho_matriz, tempo_LU, tempo_iter, tempo_residuo);
+		imprimeMatriz(Inversa, tamanho_matriz, tempo_LU, tempo_iter, tempo_residuo);
 	}
 
 	///fechando os arquivos
@@ -605,10 +621,10 @@ int main(int argc, char *argv[]){
 		fclose(saida);
 	}
 
+	LIKWID_MARKER_CLOSE;
+	
 	free(matriz);
 	free(L);
 	free(U);
 	free(Inversa);
-
-	LIKWID_MARKER_CLOSE;
 }
