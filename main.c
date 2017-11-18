@@ -217,7 +217,7 @@ double fatoracaoLU(double *L, double *U, double *matriz, unsigned int tamanho, i
 
 ///Funcao que calcula os valores da matriz Inversa atraves da retrosubstituicao
 double retrosubstituicao(double *L, double *U, double *Inversa, unsigned int tamanho) {
-	//LIKWID_MARKER_START("Retrosubs");
+	LIKWID_MARKER_START("Retrosubs");
 	///capturando o tempo inicial
 	double tempo_inicial = timestamp();
 	///agora que temos a matriz identidade, a L e a U
@@ -288,7 +288,7 @@ double retrosubstituicao(double *L, double *U, double *Inversa, unsigned int tam
 		}
 	}
 
-	//LIKWID_MARKER_STOP("Retrosubs");
+	LIKWID_MARKER_STOP("Retrosubs");
 	///capturando variacao de tempo
 	tempo_inicial = timestamp() - tempo_inicial;
 	return tempo_inicial;
@@ -349,6 +349,7 @@ int min(int a, int b) {
 
 ///Funcao que melhora os resultados obtidos anteriormente para a matriz Inversa, atraves do metodo de refinamento
 double refinamento(double *matriz, double *L, double *U, double *Inversa, unsigned int tamanho_matriz, int iteracoes, FILE *saida, bool tem_saida, double *tempo_iter) {
+	LIKWID_MARKER_START("Refinamento");
 	double tempo_total = 0;
 	double soma_tempo = 0;
 	int linha;
@@ -467,7 +468,7 @@ double refinamento(double *matriz, double *L, double *U, double *Inversa, unsign
 	tempoTotalRefinamento = timestamp() - tempoTotalRefinamento;
 	printf("# Tempo total de refinamento: %f", tempoTotalRefinamento);
 	printf("\n");
-
+	LIKWID_MARKER_STOP("Refinamento");
 	return soma_tempo/iteracoes;
 }
 
@@ -475,6 +476,7 @@ double refinamento(double *matriz, double *L, double *U, double *Inversa, unsign
 int main(int argc, char *argv[]){
 	//inicializando os marcadores
 	LIKWID_MARKER_INIT;
+	LIKWID_MARKER_THREADINIT;
 
 	///inicializando a seed de randomizacao
 	srand( 20172 );
@@ -589,10 +591,10 @@ int main(int argc, char *argv[]){
 	}
 
 	if(tem_saida){
-		imprimeMatrizArquivo(Inversa, tamanho_matriz, tempo_LU, tempo_iter, tempo_residuo, saida);
+//		imprimeMatrizArquivo(Inversa, tamanho_matriz, tempo_LU, tempo_iter, tempo_residuo, saida);
 	}
 	else{
-		imprimeMatriz(Inversa, tamanho_matriz, tempo_LU, tempo_iter, tempo_residuo);
+//		imprimeMatriz(Inversa, tamanho_matriz, tempo_LU, tempo_iter, tempo_residuo);
 	}
 
 	///fechando os arquivos
