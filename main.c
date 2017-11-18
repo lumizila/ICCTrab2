@@ -8,6 +8,7 @@
 #include <stdbool.h>
 #include <sys/time.h>
 #include <math.h>
+#include <likwid.h>
 
 ///funcao dada pelo professor para capturar o tempo
 double timestamp(void) {
