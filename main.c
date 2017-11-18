@@ -8,7 +8,12 @@
 #include <stdbool.h>
 #include <sys/time.h>
 #include <math.h>
+//para poder usar marcadores de performance
 #include <likwid.h>
+
+//inicializando os marcadores
+LIKWID_MARKER_INIT;
+LIKWID_MARKER_THREADINIT;
 
 ///funcao dada pelo professor para capturar o tempo
 double timestamp(void) {
@@ -215,7 +220,7 @@ double fatoracaoLU(double *L, double *U, double *matriz, unsigned int tamanho, i
 
 ///Funcao que calcula os valores da matriz Inversa atraves da retrosubstituicao
 double retrosubstituicao(double *L, double *U, double *Inversa, unsigned int tamanho) {
-	
+	LIKWID_MARKER_START("Retrosubs");
 	///capturando o tempo inicial
 	double tempo_inicial = timestamp();
 	///agora que temos a matriz identidade, a L e a U
@@ -285,7 +290,8 @@ double retrosubstituicao(double *L, double *U, double *Inversa, unsigned int tam
 			Inversa[linha+i] = (y[linha+i] - multi) / U[linha+j];
 		}
 	}
-
+	
+	LIKWID_MARKER_STOP("Retrosubs");
 	///capturando variacao de tempo
 	tempo_inicial = timestamp() - tempo_inicial;
 	return tempo_inicial;
@@ -589,6 +595,9 @@ int main(int argc, char *argv[]){
 	if(tem_saida == true){
 		fclose(saida);
 	}
+	
+	//fechando o marcador
+	LIKWID_MARKER_CLOSE;
 
 	free(matriz);
 	free(L);
