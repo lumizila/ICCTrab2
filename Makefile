@@ -1,5 +1,5 @@
 all: main.c
-	gcc main.c -o invmat -lm -Wall -O3 -mavx -march=native
+	gcc main.c -o invmat -llikwid -lm -Wall -O3 -mavx -march=native
 
 doc: 
 	doxygen; 
