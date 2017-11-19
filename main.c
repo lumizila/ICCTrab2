@@ -10,7 +10,6 @@
 #include <math.h>
 //para poder usar marcadores de performance
 #include <likwid.h>
-#include <pthread.h>
 
 ///funcao dada pelo professor para capturar o tempo
 double timestamp(void) {
@@ -134,11 +133,6 @@ double fatoracaoLU(double *L, int tamL, double *U, double *matriz, unsigned int 
 	///capturando o tempo inicial
 	double tempo_inicial = timestamp();
 
-	///inicializando a matriz L 
-	for(int i = 0; i < tamL; i++){
-		L[tamL] = 0;
-	}
-
 	///inicializando a matriz U
 	for(int i = 0; i < tamanho; i++){
 		for(int j = 0; j < tamanho; j ++){
@@ -217,7 +211,7 @@ double fatoracaoLU(double *L, int tamL, double *U, double *matriz, unsigned int 
 
 ///Funcao que calcula os valores da matriz Inversa atraves da retrosubstituicao
 double retrosubstituicao(double *L, double *U, double *Inversa, unsigned int tamanho) {
-	LIKWID_MARKER_START("Retrosubs");
+	LIKWID_MARKER_START("Retrosubstituição(op1)");
 	///capturando o tempo inicial
 	double tempo_inicial = timestamp();
 	///agora que temos a matriz identidade, a L e a U
@@ -240,7 +234,7 @@ double retrosubstituicao(double *L, double *U, double *Inversa, unsigned int tam
 	//TODO Alterar o tamanho das matrizes de acordo com o tamanho da linha de cache
 	//TODO Alterar os loops para que respeitem a cache
 	//TODO Armazenar apenas o que importa nas matrizes L e U ja que o resto eh 0 e mudar a logica de acordo
-	
+
 	///este for eh para cada coluna de Identidade
 	for(int i = 0; i < tamanho; i++){
 		///Ly = b
@@ -285,15 +279,15 @@ double retrosubstituicao(double *L, double *U, double *Inversa, unsigned int tam
 			///este for opera a multiplicacao entre U e x
 			multi = 0;
 			linha = tamanho*j;
-			///para cada linha de Inversa 
+			///para cada linha de Inversa
 			for(int k = (tamanho-1); k >= j; k--) {
 				multi = multi + U[linha+k]*Inversa[tamanho*k+i];
 			}
 			double total =  (y[linha+i] - multi) / U[linha+j];
-			Inversa[linha+i] = total;		
+			Inversa[linha+i] = total;
 		}
 	}
-	LIKWID_MARKER_STOP("Retrosubs");
+	LIKWID_MARKER_STOP("Retrosubstituição(op1)");
 	///capturando variacao de tempo
 	tempo_inicial = timestamp() - tempo_inicial;
 	return tempo_inicial;
@@ -359,53 +353,63 @@ int min(int a, int b) {
 
 ///Funcao que melhora os resultados obtidos anteriormente para a matriz Inversa, atraves do metodo de refinamento
 double refinamento(double *matriz, double *L, double *U, double *Inversa, unsigned int tamanho_matriz, int iteracoes, FILE *saida, bool tem_saida, double *tempo_iter) {
-	LIKWID_MARKER_START("Refinamento");
+	LIKWID_MARKER_START("Refinamento(op2)");
 	double tempo_total = 0;
 	double soma_tempo = 0;
 	int linha;
 	double tempoTotalRefinamento = timestamp();
 
+	///R = I - I_aprox
+	double *R = NULL;
+
+	///I_aprox = matriz * Inversa
+	double *I_aprox = NULL;
+
+	if (!(R = (double *) malloc(tamanho_matriz*tamanho_matriz*sizeof(double))) ) {
+		printf("Erro: afalha na alocacao da matriz R, terminando o programa.\n");
+		exit(0);
+	}
+
+	if (!(I_aprox = (double *) malloc(tamanho_matriz*tamanho_matriz*sizeof(double))) ) {
+		printf("Erro: afalha na alocacao da matriz I_aprox, terminando o programa.\n");
+		exit(0);
+	}
+
+	double *DiferencaInversa = NULL;
+	if ( ! (DiferencaInversa = (double *) malloc(tamanho_matriz*tamanho_matriz*sizeof(double))) ){
+		printf("Erro: afalha na alocacao da matriz DiferencaInversa, terminando o programa.\n");
+		exit(0);
+	}
+
 	///repete o processo o numero de vezes foi passado por parametro
 	for (int it = 1; it <= iteracoes; it++) {
 
-		///R = I - I_aprox
-		double *R = NULL;
-
-		///I_aprox = matriz * Inversa
-		double *I_aprox = NULL;
-
-		if (!(R = (double *) malloc(tamanho_matriz*tamanho_matriz*sizeof(double))) ) {
-			printf("Erro: afalha na alocacao da matriz R, terminando o programa.\n");
-			exit(0);
-		}
-
-		if (!(I_aprox = (double *) malloc(tamanho_matriz*tamanho_matriz*sizeof(double))) ) {
-			printf("Erro: afalha na alocacao da matriz I_aprox, terminando o programa.\n");
-			exit(0);
+		//zera a matrix
+		for(int a = 0; a < tamanho_matriz*tamanho_matriz; a++) {
+			I_aprox[a] = 0;
 		}
 
 		///I_aprox calculado com Blocking
 		double soma;
-		int blockSize = 8; //deve ser a raiz do tamanho da linha de cache?
+		int blockSize = 16;
 		for(int i = 0; i < tamanho_matriz; i += blockSize) {
 			for(int j = 0; j < tamanho_matriz; j += blockSize) {
-			    for(int k = 0; k < tamanho_matriz; k += blockSize) {
-						for(int ii = 0; ii < min(blockSize, tamanho_matriz-i); ii++) {
-							for(int jj = 0; jj < min(blockSize, tamanho_matriz-j); jj++) {
-								soma = 0;
-								for(int kk = 0; kk < min(blockSize, tamanho_matriz-k); kk++) {
-									soma += matriz[((i+ii)*tamanho_matriz) + (k+kk)] * Inversa[((k+kk)*tamanho_matriz) + (j+jj)];
-								}
-								I_aprox[((i+ii)*tamanho_matriz) + (j+jj)] += soma;
+		    for(int k = 0; k < tamanho_matriz; k += blockSize) {
+					for(int ii = 0; ii < min(blockSize, tamanho_matriz-i); ii++) {
+						for(int jj = 0; jj < min(blockSize, tamanho_matriz-j); jj++) {
+							soma = 0;
+							for(int kk = 0; kk < min(blockSize, tamanho_matriz-k); kk++) {
+								soma = soma + (matriz[((i+ii)*tamanho_matriz) + (k+kk)] * Inversa[((k+kk)*tamanho_matriz) + (j+jj)]);
 							}
+							I_aprox[((i+ii)*tamanho_matriz) + (j+jj)] = I_aprox[((i+ii)*tamanho_matriz) + (j+jj)] + soma;
 						}
-			    }
+					}
+		    }
 			}
 		}
 
-		/*
 		///I_aprox calculado normalmente
-		double soma;
+		/*double soma;
 		for(int i = 0; i < tamanho_matriz; i++) {
 			linha = i * tamanho_matriz;
 			for(int j = 0; j < tamanho_matriz; j++) {
@@ -449,13 +453,6 @@ double refinamento(double *matriz, double *L, double *U, double *Inversa, unsign
 			printf("# iter %d: %.17g\n", it, norma);
 		}
 
-
-		double *DiferencaInversa = NULL;
-		if ( ! (DiferencaInversa = (double *) malloc(tamanho_matriz*tamanho_matriz*sizeof(double))) ){
-			printf("Erro: afalha na alocacao da matriz DiferencaInversa, terminando o programa.\n");
-			exit(0);
-		}
-
 		//devemos resolver o sistema A*DiferencaInversa = R para encontrar DiferencaInversa
 		retrosubstituicao_refinamento(L, U, DiferencaInversa, R, tamanho_matriz);
 
@@ -470,15 +467,14 @@ double refinamento(double *matriz, double *L, double *U, double *Inversa, unsign
 		tempo_inicial = timestamp() - tempo_inicial;
 		*tempo_iter = *tempo_iter + tempo_inicial;
 
-		free(R);
-		free(I_aprox);
-		free(DiferencaInversa);
 	}
-
+	free(R);
+	free(I_aprox);
+	free(DiferencaInversa);
 	tempoTotalRefinamento = timestamp() - tempoTotalRefinamento;
 	printf("# Tempo total de refinamento: %f", tempoTotalRefinamento);
 	printf("\n");
-	LIKWID_MARKER_STOP("Refinamento");
+	LIKWID_MARKER_STOP("Refinamento(op2)");
 	return soma_tempo/iteracoes;
 }
 
@@ -533,7 +529,7 @@ int main(int argc, char *argv[]){
 			tamanho_matriz = atoi(argv[i+1]);
 			matriz = generateSquareRandomMatrix(tamanho_matriz);
 			//descomentar a linha de baixo para ver a matriz eleatoria criada
-			imprimeMatriz(matriz, tamanho_matriz,0,0,0);
+			//imprimeMatriz(matriz, tamanho_matriz,0,0,0);
 		}
 		else if(strcmp(argv[i], "-i") == 0){
 			///numero de iteracoes do refinamento
@@ -560,7 +556,7 @@ int main(int argc, char *argv[]){
 	double *L = NULL;
 	double *U = NULL;
 	double *Inversa = NULL;
-	int tam_quadrado = tamanho_matriz*tamanho_matriz; 
+	int tam_quadrado = tamanho_matriz*tamanho_matriz;
 	//ALOCACAO ANTIGA
 	/*if ( ! (L = (double *) malloc(tamanho_matriz*tamanho_matriz*sizeof(double))) ){
 		printf("Erro: afalha na alocacao da matriz L, terminando o programa.\n");
@@ -577,16 +573,16 @@ int main(int argc, char *argv[]){
 
 	//ALOCACAO NOVA, MAIS EFICIENTE, MENOS MEMORIA
 	int tamL = tam_quadrado - (((tam_quadrado-tamanho_matriz)/2) + tamanho_matriz);
-	if ( ! (L = (double *) malloc(tamL*sizeof(double))) ){
+	if ( ! (L = (double *) malloc(tamL * sizeof(double))) ){
 		printf("Erro: afalha na alocacao da matriz L, terminando o programa.\n");
 		exit(0);
 	}
-	
+
 	int trocas[tamanho_matriz];
 	for(int i = 0; i < tamanho_matriz; i++){
 		trocas[i] = i;
 	}
-	double tempo_LU = fatoracaoLU(L, tamL, U, matriz, tamanho_matriz, trocas);	
+	double tempo_LU = fatoracaoLU(L, tamL, U, matriz, tamanho_matriz, trocas);
 	///testa se inversivel
 	if(tempo_LU == -1) {
 		printf("Erro: a matriz nao eh inversivel\n");
@@ -595,12 +591,13 @@ int main(int argc, char *argv[]){
 
 	///faz a retrosubstituicao
 	double tempo_iter = retrosubstituicao(L, U, Inversa, tamanho_matriz);
+
 	if (tem_saida) {
 		fprintf(saida, "#\n");
 	} else {
 		printf("#\n");
 	}
-	imprimeMatriz(Inversa, tamanho_matriz, 0,0,0);
+
 	///chamando a funcao de refinamento
 	if (iteracoes > 0) {
 		tempo_residuo = refinamento(matriz, L, U, Inversa, tamanho_matriz, iteracoes, saida, tem_saida, &tempo_iter);
@@ -621,10 +618,9 @@ int main(int argc, char *argv[]){
 		fclose(saida);
 	}
 
-	LIKWID_MARKER_CLOSE;
-	
 	free(matriz);
 	free(L);
 	free(U);
 	free(Inversa);
+	LIKWID_MARKER_CLOSE;
 }

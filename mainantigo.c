@@ -1,4 +1,4 @@
-///Os membros do grupo são: 
+///Os membros do grupo são:
 ///Luiza Culau - GRR20141014
 ///Adolfo Tognetti - GRR20152278
 
@@ -175,7 +175,7 @@ double fatoracaoLU(double *L, double *U, double *matriz, double *identidade, uns
 		pivo_posicao = i-1;
 		coluna = i-1;
 		pivo = U[tamanho*pivo_posicao+pivo_posicao];
-		teve_troca = false;
+		/*teve_troca = false;
 
 		///guarda em qual linha esta o maior pivo
 		int maior = pivo_posicao;
@@ -194,7 +194,7 @@ double fatoracaoLU(double *L, double *U, double *matriz, double *identidade, uns
 			trocaLinhas(matriz, tamanho, pivo_posicao, maior);
 			pivo = U[tamanho*pivo_posicao+pivo_posicao];
 
-		}
+		}*/
 
 		///caso o pivo seja 0 a matriz nao tem inversa
 		if (pivo == 0) {
@@ -342,6 +342,7 @@ void retrosubstituicao_refinamento(double *L, double *U, double *DiferencaInvers
 double refinamento(double *matriz, double *L, double *U, double *Inversa, double *identidade, unsigned int tamanho_matriz, int iteracoes, FILE *saida, bool tem_saida, double *tempo_iter) {
 	double tempo_total = 0;
 	double soma_tempo = 0;
+	double tempoTotalRefinamento = timestamp();
 
 	///repete o processo o numero de vezes foi passado por parametro
 	for (int it = 1; it <= iteracoes; it++) {
@@ -374,7 +375,7 @@ double refinamento(double *matriz, double *L, double *U, double *Inversa, double
 			}
 		}
 
-		///calculando R 
+		///calculando R
 		//TODO: IDEBTIDADE N PRECISA DE MATRIZ JA QUE TEM SO A DIAG PRINCIPAL
 		for(int i = 0; i < tamanho_matriz; i++){
 			for(int j = 0; j < tamanho_matriz; j++){
@@ -426,6 +427,9 @@ double refinamento(double *matriz, double *L, double *U, double *Inversa, double
 		free(I_aprox);
 		free(DiferencaInversa);
 	}
+	tempoTotalRefinamento = timestamp() - tempoTotalRefinamento;
+	printf("# Tempo total de refinamento: %f", tempoTotalRefinamento);
+	printf("\n");
 	return soma_tempo/iteracoes;
 }
 
@@ -517,7 +521,7 @@ int main(int argc, char *argv[]){
 	identidade = geraMatrizIdentidade(tamanho_matriz);
 
 	double tempo_LU = fatoracaoLU(L, U, matriz, identidade, tamanho_matriz);
-	
+
 	///testa se inversivel
 	if(tempo_LU == -1){
 		printf("Erro: a matriz nao eh inversivel\n");
@@ -529,7 +533,7 @@ int main(int argc, char *argv[]){
 		printf("Erro: afalha na alocacao da matriz I, terminando o programa.\n");
 		exit(0);
 	}
-	
+
 	///faz a retrosubstituicao
 	double tempo_iter = retrosubstituicao(L, U, Inversa, identidade, tamanho_matriz);
 
