@@ -221,12 +221,16 @@ double retrosubstituicao(double *L, double *U, double *Inversa, unsigned int tam
 	///assim temos que Ax=b e A=LU, portanto L(Ux) = b, Ly = b e Ux = y
 
 	///criando o vetor x e matriz y para salvar as informacoes
-	double y[tamanho*tamanho];
+	double *y;
 	double multi;
 	double l;
 	int linha;
 	int identidade;
 	///inicializando a matriz y
+	if (!(y = (double *) malloc(tamanho*tamanho*sizeof(double))) ) {
+		printf("Erro: afalha na alocacao da matriz R, terminando o programa.\n");
+		exit(0);
+	}
 	for(int m = 0; m < tamanho*tamanho; m++){
 		y[m] = 0;
 	}
@@ -287,6 +291,7 @@ double retrosubstituicao(double *L, double *U, double *Inversa, unsigned int tam
 			Inversa[linha+i] = total;
 		}
 	}
+	free(y);
 	LIKWID_MARKER_STOP("Retrosubstituição(op1)");
 	///capturando variacao de tempo
 	tempo_inicial = timestamp() - tempo_inicial;
