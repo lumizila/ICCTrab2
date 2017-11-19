@@ -472,7 +472,7 @@ double refinamento(double *matriz, double *L, double *U, double *Inversa, unsign
 	free(I_aprox);
 	free(DiferencaInversa);
 	tempoTotalRefinamento = timestamp() - tempoTotalRefinamento;
-	printf("# Tempo total de refinamento: %f", tempoTotalRefinamento);
+	printf("# Tempo op2: %f", tempoTotalRefinamento);
 	printf("\n");
 	LIKWID_MARKER_STOP("Refinamento(op2)");
 	return soma_tempo/iteracoes;

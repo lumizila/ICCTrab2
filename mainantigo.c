@@ -428,7 +428,7 @@ double refinamento(double *matriz, double *L, double *U, double *Inversa, double
 		free(DiferencaInversa);
 	}
 	tempoTotalRefinamento = timestamp() - tempoTotalRefinamento;
-	printf("# Tempo total de refinamento: %f", tempoTotalRefinamento);
+	printf("# Tempo op2: %f", tempoTotalRefinamento);
 	printf("\n");
 	return soma_tempo/iteracoes;
 }
