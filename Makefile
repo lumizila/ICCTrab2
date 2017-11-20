@@ -1,5 +1,5 @@
 all: main.c
-	gcc main.c -o invmat -DLIKWID_PERFMON -I/home/local/likwid/include -L/home/local/likwid/lib -llikwid -lm -O1 -mavx -march=native
+	gcc main.c -o invmat -DLIKWID_PERFMON -I/home/soft/likwid/include -L/home/soft/likwid/lib -llikwid -lm -O3 -mavx -march=native
 
 doc: 
 	doxygen; 
