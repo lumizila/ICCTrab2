@@ -1,6 +1,6 @@
 # ICCTrab2
 ### Segundo trabalho de ICC - Otimizar o codigo do primeiro trabalho.
-### Para usar o lidwid nos labs, executar os seguintes comandos primeiro: 
+### Para usar o likwid nos labs, executar os seguintes comandos primeiro: 
 
 ```
 modprobe msr
