@@ -1,3 +1,0 @@
-- FAZER BLOCKING NO CALCULO DE I_APROX??????
-- Mudei para que a matriz identidade não seja armazenada e sim gerada na hora
-- Tirei os "i*tamanho_matriz" do loop para não calcular toda hora
