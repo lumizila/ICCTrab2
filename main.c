@@ -221,26 +221,29 @@ double retrosubstituicao(double *L, double *U, double *Inversa, unsigned int tam
 	///assim temos que Ax=b e A=LU, portanto L(Ux) = b, Ly = b e Ux = y
 
 	///criando o vetor x e matriz y para salvar as informacoes
-	double *y;
+	double y[tamanho];
 	double multi;
 	double l;
 	int linha;
 	int identidade;
-	///inicializando a matriz y
-	if (!(y = (double *) malloc(tamanho*tamanho*sizeof(double))) ) {
-		printf("Erro: afalha na alocacao da matriz R, terminando o programa.\n");
-		exit(0);
-	}
+
 	for(int m = 0; m < tamanho*tamanho; m++){
-		y[m] = 0;
+		Inversa[m] = 0;
 	}
 
-	//TODO Alterar o tamanho das matrizes de acordo com o tamanho da linha de cache
-	//TODO Alterar os loops para que respeitem a cache
-	//TODO Armazenar apenas o que importa nas matrizes L e U ja que o resto eh 0 e mudar a logica de acordo
-
-	///este for eh para cada coluna de Identidade
+	///inicializando a matriz y
+	//if (!(y = (double *) malloc(tamanho*tamanho*sizeof(double))) ) {
+	//	printf("Erro: afalha na alocacao da matriz R, terminando o programa.\n");
+	//	exit(0);
+	//}
+	
 	for(int i = 0; i < tamanho; i++){
+		for(int m = 0; m < tamanho; m++){
+			y[m] = 0;
+		}
+	
+		///este for eh para cada coluna de Identidade
+	
 		///Ly = b
 		///este for eh para cada linha de y
 		///faz-se a substituicao
@@ -255,7 +258,7 @@ double retrosubstituicao(double *L, double *U, double *Inversa, unsigned int tam
 						int aux = ((j*j)-j)/2;
 						l = L[aux+k];
 					}
-					multi = multi + l * y[tamanho*k+i];
+					multi = multi + l * y[k];
 				}
 
 				//y[2] = (identidade[tamanho*j+i]-(L[tamanho*j]*y[0]+L[tamanho*j+1]*y[1]))/ L[tamanho*j+2]
@@ -264,21 +267,15 @@ double retrosubstituicao(double *L, double *U, double *Inversa, unsigned int tam
 				if(j == i){
 					identidade = 1;
 				}
-				y[linha+i] = (identidade - multi);
+				y[j] = (identidade - multi);
 		}
-	}
-	for(int m = 0; m < tamanho*tamanho; m++){
-		Inversa[m] = 0;
-	}
+	
+			///Ux = y
+			///agora que tenho o valor de y referente a coluna i da identidade,
+			///eh possivel calcular o vetor x referente a coluna i da identidade
+			///com retrosubstituicao
 
-	///este for eh para cada linha de U
-	for(int i = 0; i < tamanho; i++){
-		///Ux = y
-		///agora que tenho o valor de y referente a coluna i da identidade,
-		///eh possivel calcular o vetor x referente a coluna i da identidade
-		///com retrosubstituicao
-
-		///para cada coluna de Inversa
+			///para cada coluna de Inversa
 		for(int j = (tamanho-1); j >= 0; j--) {
 			///este for opera a multiplicacao entre U e x
 			multi = 0;
@@ -287,7 +284,7 @@ double retrosubstituicao(double *L, double *U, double *Inversa, unsigned int tam
 			for(int k = (tamanho-1); k >= j; k--) {
 				multi = multi + U[linha+k]*Inversa[tamanho*k+i];
 			}
-			double total =  (y[linha+i] - multi) / U[linha+j];
+			double total =  (y[j] - multi) / U[linha+j];
 			Inversa[linha+i] = total;
 		}
 	}
