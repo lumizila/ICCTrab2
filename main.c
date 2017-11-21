@@ -241,7 +241,7 @@ double retrosubstituicao(double *L, double *U, double *Inversa, unsigned int tam
 		for(int m = 0; m < tamanho; m++){
 			y[m] = 0;
 		}
-	
+
 		///este for eh para cada coluna de Identidade
 	
 		///Ly = b
@@ -288,7 +288,7 @@ double retrosubstituicao(double *L, double *U, double *Inversa, unsigned int tam
 			Inversa[linha+i] = total;
 		}
 	}
-	free(y);
+	//free(y);
 	LIKWID_MARKER_STOP("Retrosubstituição(op1)");
 	///capturando variacao de tempo
 	tempo_inicial = timestamp() - tempo_inicial;
